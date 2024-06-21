@@ -1,6 +1,7 @@
 import 'package:cineapp/provaider/movie_provaider.dart';
 import 'package:cineapp/screens/categorias_screen.dart';
 import 'package:cineapp/screens/detalle_pelicula.dart';
+import 'package:cineapp/screens/favoritas_screen.dart';
 import 'package:cineapp/screens/home_screen.dart';
 import 'package:cineapp/screens/sobre_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => MovieProvider()..fetchMovies(),
+      create: (context) => MovieProvider()..fetchPelicula(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: const HomeScreen(),
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
           CategoriaScreen.routeName: (cxt) => const CategoriaScreen(),
           SobreScreen.routeName: (ctx) => const SobreScreen(),
           HomeScreen.routeName: (ctx) => const HomeScreen(),
+          FavoritaScreen.routeName: (ctx) => const FavoritaScreen(),
         },
       ),
     );

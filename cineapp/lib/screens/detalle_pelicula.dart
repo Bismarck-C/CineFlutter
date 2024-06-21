@@ -2,7 +2,6 @@ import 'package:cineapp/screens/trailer_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cineapp/provaider/movie_provaider.dart';
-import 'package:video_player/video_player.dart';
 
 class DetallePeliculaScreen extends StatefulWidget {
   static const routeName = '/movie-detail';
@@ -14,42 +13,36 @@ class DetallePeliculaScreen extends StatefulWidget {
 }
 
 class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
-  bool _isLoading = true; // Estado para controlar la carga inicial
-  bool _didFetchData =
-      false; // Para evitar múltiples llamadas a fetchMovieDetails
-
-  late VideoPlayerController _controller;
+  bool _isLoading = true;
+  bool _didFetchData = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didFetchData) {
       _loadMovieDetails();
-      _didFetchData = true; // Asegurarse de que solo se cargue una vez
+      _didFetchData = true;
     }
   }
 
-  // Función para cargar los detalles de la película
   void _loadMovieDetails() {
     final movieId = ModalRoute.of(context)?.settings.arguments as int?;
     if (movieId != null) {
       Provider.of<MovieProvider>(context, listen: false)
-          .fetchMovieDetails(movieId)
+          .fetchPeliculaDetalle(movieId)
           .then((_) {
         setState(() {
-          _isLoading =
-              false; // Cambiar el estado a false cuando los datos estén cargados
+          _isLoading = false;
         });
       }).catchError((error) {
-        print('Error fetching movie details: $error');
+        print('Error al obtener película: $error');
         setState(() {
-          _isLoading = false; // Cambiar el estado a false si hay un error
+          _isLoading = false;
         });
       });
     } else {
       setState(() {
-        _isLoading =
-            false; // Cambiar el estado a false si no se proporciona un movieId
+        _isLoading = false;
       });
     }
   }
@@ -59,6 +52,12 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
     final movie = Provider.of<MovieProvider>(context).selectedMovie;
     final actors = Provider.of<MovieProvider>(context).actors;
     final trailer = Provider.of<MovieProvider>(context).youtubeTrailerKey;
+    var isFavorite = false;
+    if(movie.isNotEmpty){
+      isFavorite = Provider.of<MovieProvider>(context).isFavorite(movie['id']);
+    }
+    final iconColor = isFavorite ? Colors.red : Colors.white;
+    final icon = isFavorite ? Icons.favorite : Icons.favorite_border;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,15 +65,33 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
         centerTitle: true,
         title: Text(
           movie['original_title'] ?? 'Sin título',
-          style:
-              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: Icon(icon, color: iconColor),
+            onPressed: () {
+              final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+              if (isFavorite) {
+                movieProvider.removeFavoriteMovie(movie['id']);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Película eliminada de favoritos')),
+                );
+              } else {
+                movieProvider.addFavoriteMovie(movie);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Película añadida a favoritos')),
+                );
+              }
+              setState(() {});
+            },
+          ),
+        ],
       ),
-      body: _isLoading // Mostrar el indicador de carga si estamos cargando
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,71 +101,68 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                       'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.error,
-                            color: Colors.red, size: 50);
+                        return const Icon(Icons.error, color: Colors.red, size: 50);
                       },
                     ),
                   const SizedBox(height: 30),
+                  const Text('👁️‍🗨️ Sinopsis:', style:TextStyle(fontSize:25, fontWeight: FontWeight.bold)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
-                      '👁️‍🗨️ Sinopsis: \n${movie['overview'] ?? 'Sin descripción'}',
-                      style: const TextStyle(fontSize: 18),
+                      '${movie['overview'] ?? 'Sin descripción'}',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  const Text('🍿 Genero:', style:TextStyle(fontSize:25, fontWeight: FontWeight.bold)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text(
+                      '${movie['genres']?.map((g) => g['name']).join(', ') ?? 'No disponible'}',
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ),
                   const SizedBox(height: 30),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      '🍿 Género: ${movie['genres']?.map((g) => g['name']).join(', ') ?? 'No disponible'}',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 1.0),
                     child: Row(
                       children: [
                         const Text(
                           '⏫ Puntuación:    ',
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                         ),
                         Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
+                          width: 60,
+                          height: 60,
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.grey[800],
+                            color: Color.fromARGB(255, 73, 212, 45),
                           ),
                           child: Center(
                             child: Text(
                               movie['vote_average'].toStringAsFixed(1),
-                              style: const TextStyle(
-                                  fontSize: 17, color: Colors.white),
+                              style: const TextStyle(fontSize: 23, color: Colors.white),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 1.0),
                     child: Text(
                       '🎬 Trailer:',
-                      style: TextStyle(fontSize: 25),
+                      style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  Center(
-                    child: TrailerPlayer(url: trailer)
-                  ),
-                  const SizedBox(height: 20),
+                  Center(child: TrailerPlayer(url: trailer)),
+                  const SizedBox(height: 50),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
                       '🎭 Actores:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -174,8 +188,7 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                                     height: 100,
                                     width: 100,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.error,
-                                          color: Colors.red, size: 50);
+                                      return const Icon(Icons.error, color: Colors.red, size: 50);
                                     },
                                   ),
                                 ),
@@ -183,9 +196,7 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                               Text(
                                 actor['name'] ?? 'Desconocido',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
+                                style: const TextStyle(fontSize: 14),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

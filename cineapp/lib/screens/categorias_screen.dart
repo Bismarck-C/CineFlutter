@@ -3,7 +3,7 @@ import 'package:cineapp/navegacion/navegacion.dart';
 import 'package:cineapp/provaider/movie_provaider.dart';
 import 'package:cineapp/screens/detalle_pelicula.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Importar el CustomLayout
+import 'package:provider/provider.dart';
 
 class CategoriaScreen extends StatelessWidget {
   static const routeName = '/categorias';
@@ -12,11 +12,17 @@ class CategoriaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final movieProvider = Provider.of<MovieProvider>(context);
-    return Navegador( // Utilizando CustomLayout
-      selectedIndex: 1, // Ajustar el índice según corresponda
+    return Navegador(
+      selectedIndex: 1,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('📽️ Categorias', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: const Text(
+            '📽️ Categorias',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          ),
           backgroundColor: Colors.black,
           toolbarHeight: 86.2,
           shape: const RoundedRectangleBorder(
@@ -30,10 +36,10 @@ class CategoriaScreen extends StatelessWidget {
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              buildCategorySection('Populares 🔥', movieProvider.popularMovies),
-              buildOtherCategorySection('Mejor calificadas ⭐', movieProvider.topRatedMovies),
-              buildOtherCategorySection('En cartelera 🎞️', movieProvider.nowPlayingMovies),
-              buildOtherCategorySection("Proximamente 🎦", movieProvider.upComingMovies)
+              buildCategoriaSeccion('Populares 🔥', movieProvider.popularMovies),
+              buildOtrasCategoriasSection('Mejor calificadas ⭐', movieProvider.topRatedMovies),
+              buildOtrasCategoriasSection('En cartelera 🎞️', movieProvider.nowPlayingMovies),
+              buildOtrasCategoriasSection("Proximamente 🎦", movieProvider.upComingMovies),
             ],
           ),
         ),
@@ -41,7 +47,7 @@ class CategoriaScreen extends StatelessWidget {
     );
   }
 
-  Widget buildCategorySection(String title, List movies) {
+  Widget buildCategoriaSeccion(String title, List movies) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -50,7 +56,11 @@ class CategoriaScreen extends StatelessWidget {
           child: Center(
             child: Text(
               title,
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black,),
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ),
@@ -58,7 +68,13 @@ class CategoriaScreen extends StatelessWidget {
           options: CarouselOptions(
             height: 670,
             enlargeCenterPage: true,
-            autoPlay: true,
+            autoPlay: false,
+            viewportFraction: 0.8,
+            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            autoPlayCurve: Curves.fastOutSlowIn,
+            scrollDirection: Axis.horizontal,
+            enableInfiniteScroll: true,
           ),
           items: movies.map((movie) {
             return Builder(
@@ -83,7 +99,14 @@ class CategoriaScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(movie['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),),
+                      Text(
+                        movie['title'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -95,7 +118,7 @@ class CategoriaScreen extends StatelessWidget {
     );
   }
 
-  Widget buildOtherCategorySection(String title, List movies) {
+  Widget buildOtrasCategoriasSection(String title, List movies) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -104,15 +127,25 @@ class CategoriaScreen extends StatelessWidget {
           child: Center(
             child: Text(
               title,
-              style: const TextStyle(fontSize:26, fontWeight: FontWeight.bold, color: Colors.black),
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ),
         CarouselSlider(
           options: CarouselOptions(
-            height: 460,
-            enlargeCenterPage: true,
+            height: 400,
+            enlargeCenterPage: false,
             autoPlay: true,
+            viewportFraction: 0.5,
+            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            autoPlayCurve: Curves.decelerate,
+            scrollDirection: Axis.horizontal,
+            enableInfiniteScroll: true,
           ),
           items: movies.map((movie) {
             return Builder(
@@ -128,16 +161,30 @@ class CategoriaScreen extends StatelessWidget {
                     children: <Widget>[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10.0),
-                        child: Expanded(
-                          child: Image.network(
-                            'https://image.tmdb.org/t/p/w500/${movie['poster_path']}',
-                            fit: BoxFit.cover,
-                            height: 350,
-                            width: 230,
-                          ),
+                        child: Image.network(
+                          'https://image.tmdb.org/t/p/w500/${movie['poster_path']}',
+                          fit: BoxFit.cover,
+                          height: 280,
+                          width: 170,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                              size: 100,
+                            );
+                          },
                         ),
                       ),
-                      Text(movie['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),),
+                      const SizedBox(height: 10),
+                      Text(
+                        movie['title'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                   ),
                 );

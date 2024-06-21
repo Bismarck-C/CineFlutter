@@ -6,7 +6,7 @@ class ApiService {
   final String apiKey = key;
   final String baseUrl = url;
 
-  Future<List> fetchMoviesByCategory(String category) async {
+  Future<List> fetchPeliculaByCategoria(String category) async {
     final response = await http.get(Uri.parse(
       '$baseUrl/movie/$category?api_key=$apiKey&language=es-ES'
     ));
@@ -19,7 +19,7 @@ class ApiService {
     }
   }
 
-  Future<List> fetchMovieActors(int movieId) async {
+  Future<List> fetchActores(int movieId) async {
     final response = await http.get(Uri.parse(
       '$baseUrl/movie/$movieId/credits?api_key=$apiKey&language=es-ES'
     ));
@@ -32,7 +32,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchMovieById(int movieId) async {
+  Future<Map<String, dynamic>> fetchPeliculaById(int movieId) async {
     final response = await http.get(Uri.parse(
       '$baseUrl/movie/$movieId?api_key=$apiKey&language=es-ES'
     ));
@@ -44,7 +44,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> fetchMovieTrailer(int movieId) async {
+  Future<Map<String, dynamic>> fetchPeliculaTrailer(int movieId) async {
     final response = await http.get(Uri.parse(
         '$baseUrl/movie/$movieId/videos?api_key=$apiKey&language=es-ES'));
     if (response.statusCode == 200) {

@@ -8,6 +8,7 @@ class MovieProvider with ChangeNotifier {
   List<dynamic> _upComingMovies = [];
   List<dynamic> _actors = [];
   Map<String, dynamic> _selectedMovie = {};
+  List<Map<String, dynamic>> _favoriteMovies = [];
   String _youtubeTrailerKey = '';
 
   List<dynamic> get popularMovies => _popularMovies;
@@ -15,18 +16,19 @@ class MovieProvider with ChangeNotifier {
   List<dynamic> get nowPlayingMovies => _nowPlayingMovies;
   List<dynamic> get upComingMovies => _upComingMovies;
   List<dynamic> get actors => _actors;
+  List<Map<String, dynamic>> get favoriteMovies => _favoriteMovies;
   Map<String, dynamic> get selectedMovie => _selectedMovie;
   String get youtubeTrailerKey => _youtubeTrailerKey;
 
   final ApiService _apiService = ApiService();
 
-  Future<void> fetchMovies() async {
+  Future<void> fetchPelicula() async {
     try {
-      _popularMovies = await _apiService.fetchMoviesByCategory('popular');
-      _topRatedMovies = await _apiService.fetchMoviesByCategory('top_rated');
+      _popularMovies = await _apiService.fetchPeliculaByCategoria('popular');
+      _topRatedMovies = await _apiService.fetchPeliculaByCategoria('top_rated');
       _nowPlayingMovies =
-          await _apiService.fetchMoviesByCategory('now_playing');
-      _upComingMovies = await _apiService.fetchMoviesByCategory('upcoming');
+          await _apiService.fetchPeliculaByCategoria('now_playing');
+      _upComingMovies = await _apiService.fetchPeliculaByCategoria('upcoming');
       notifyListeners();
     } catch (e) {
       print(e);
@@ -34,16 +36,14 @@ class MovieProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchMovieDetails(int movieId) async {
+  Future<void> fetchPeliculaDetalle(int movieId) async {
     try {
-      final movieDetails = await _apiService.fetchMovieById(movieId);
+      final movieDetails = await _apiService.fetchPeliculaById(movieId);
       _selectedMovie = movieDetails;
 
-      _actors = await _apiService.fetchMovieActors(movieId);
-      final videos = await _apiService.fetchMovieTrailer(movieId);
-      print(videos);
+      _actors = await _apiService.fetchActores(movieId);
+      final videos = await _apiService.fetchPeliculaTrailer(movieId);
       _youtubeTrailerKey = _findYoutubeTrailerKey(videos);
-      print(_youtubeTrailerKey);
       notifyListeners();
     } catch (e) {
       print(e);
@@ -60,4 +60,19 @@ class MovieProvider with ChangeNotifier {
     }
     return ''; // Retornar una cadena vacía si no se encuentra ningún trailer de YouTube
   }
+
+  void addFavoriteMovie(Map<String, dynamic> movie) {
+    if (!_favoriteMovies.any((m) => m['id'] == movie['id'])) {
+      _favoriteMovies.add(movie);
+      notifyListeners();
+    }
+  }
+  void removeFavoriteMovie(int movieId) {
+    _favoriteMovies.removeWhere((movie) => movie['id'] == movieId);
+    notifyListeners();
+  }
+   bool isFavorite(int movieId) {
+    return _favoriteMovies.any((movie) => movie['id'] == movieId);
+  }
+  
 }

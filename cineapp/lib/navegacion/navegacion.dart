@@ -7,18 +7,19 @@ class Navegador extends StatefulWidget {
   const Navegador({super.key, required this.child, required this.selectedIndex});
 
   @override
- NavegadorState createState() => NavegadorState();
+  NavegadorState createState() => NavegadorState();
 }
 
 class NavegadorState extends State<Navegador> {
   void _onItemTapped(int index) {
     setState(() {
-      // La lógica de navegación basada en el índice seleccionado
       if (index == 0) {
         Navigator.pushReplacementNamed(context, '/');
       } else if (index == 1) {
         Navigator.pushReplacementNamed(context, '/categorias');
       } else if (index == 2) {
+        Navigator.pushReplacementNamed(context, '/favoritas');
+      } else {
         Navigator.pushReplacementNamed(context, '/sobre');
       }
     });
@@ -28,25 +29,33 @@ class NavegadorState extends State<Navegador> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
+      
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Inicio',
+            backgroundColor: Colors.black,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.category),
             label: 'Categorías',
+            backgroundColor: Colors.black,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_outlined),
+            label: 'Favoritas',
+            backgroundColor: Colors.black,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.info),
             label: 'Sobre la App',
+            backgroundColor: Colors.black,
           ),
         ],
         currentIndex: widget.selectedIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: const Color.fromARGB(255, 156, 154, 154),
+        selectedItemColor: Colors.white, 
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );

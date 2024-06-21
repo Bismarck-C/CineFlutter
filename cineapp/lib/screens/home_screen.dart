@@ -1,7 +1,8 @@
 import 'package:cineapp/navegacion/navegacion.dart';
 import 'package:cineapp/screens/categorias_screen.dart';
+import 'package:cineapp/screens/favoritas_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:cineapp/screens/sobre_screen.dart';// Importar el CustomLayout
+import 'package:cineapp/screens/sobre_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "home_screen";
@@ -22,8 +23,10 @@ class HomeScreenState extends State<HomeScreen> {
     if (index == 1) {
       Navigator.pushNamed(context, CategoriaScreen.routeName);
     } else if (index == 2) {
+      Navigator.pushNamed(context, FavoritaScreen.routeName);
+    } else if(index == 3) {
       Navigator.pushNamed(context, SobreScreen.routeName);
-    } else {
+    }else{
       Navigator.pushNamed(context, HomeScreen.routeName);
     }
   }
@@ -55,10 +58,9 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: const Color.fromARGB(255, 247, 17, 0),
         body: Stack(
           children: <Widget>[
-            // Imagen de fondo
             Positioned.fill(
               child: Image.asset(
-                'assets/images/fondo.jpg', // Asegúrate de que la ruta sea correcta
+                'assets/images/fondo.jpg', 
                 fit: BoxFit.cover,
               ),
             ),

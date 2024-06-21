@@ -32,7 +32,7 @@ class TrailerPlayerState extends State<TrailerPlayer> {
       controller: _controller,
       showVideoProgressIndicator: true,
       onReady: () {
-        print('Player is ready.');
+        print('Listo para reproducir.');
       },
     );
   }

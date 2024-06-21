@@ -8,7 +8,6 @@ class SobreScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Datos de los desarrolladores
     final List<Map<String, String>> desarrolladores = [
       {
         'nombre': 'Bismarck Victor',
@@ -22,8 +21,8 @@ class SobreScreen extends StatelessWidget {
       },
     ];
 
-    return Navegador( // Utilizando CustomLayout
-      selectedIndex: 2, // Ajustar el índice según corresponda
+    return Navegador(
+      selectedIndex: 3, 
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Sobre la App', style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),),
@@ -35,6 +34,9 @@ class SobreScreen extends StatelessWidget {
                 bottomLeft: Radius.circular(25)),
           ),
           centerTitle: true,
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          )
         ),
         backgroundColor: Colors.white,
         body: Padding(
