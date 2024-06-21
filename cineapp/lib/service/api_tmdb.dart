@@ -15,19 +15,7 @@ class ApiService {
       final data = json.decode(response.body);
       return data['results'];
     } else {
-      throw Exception('Error al cargar las peliculas');
-    }
-  }
-
-  Future<Map<String, dynamic>> fetchMovieDetails(int movieId) async {
-    final response = await http.get(Uri.parse(
-      '$baseUrl/movie/$movieId?api_key=$apiKey&append_to_response=videos&language=es-ES'
-    ));
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Error al cargar los detalles');
+      throw Exception('Error al cargar las películas');
     }
   }
 
@@ -40,7 +28,19 @@ class ApiService {
       final data = json.decode(response.body);
       return data['cast'];
     } else {
-      throw Exception('Error al cargar los actores');
+      throw Exception('Error al cargar los actores de la película');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchMovieById(int movieId) async {
+    final response = await http.get(Uri.parse(
+      '$baseUrl/movie/$movieId?api_key=$apiKey&language=es-ES'
+    ));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al cargar la película');
     }
   }
 }

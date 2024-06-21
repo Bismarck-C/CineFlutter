@@ -2,48 +2,61 @@ import 'package:cineapp/service/api_tmdb.dart';
 import 'package:flutter/material.dart';
 
 class MovieProvider with ChangeNotifier {
-  List _popularMovies = [];
-  List _topRatedMovies = [];
-  List _nowPlayingMovies = []; 
-  List _upComingMovies = [];
-  List _actors = [];
+  List<dynamic> _popularMovies = [];
+  List<dynamic> _topRatedMovies = [];
+  List<dynamic> _nowPlayingMovies = [];
+  List<dynamic> _upComingMovies = [];
+  List<dynamic> _actors = [];
   Map<String, dynamic> _selectedMovie = {};
   String _youtubeTrailerKey = '';
 
-  List get popularMovies => _popularMovies;
-  List get topRatedMovies => _topRatedMovies;
-  List get nowPlayingMovies => _nowPlayingMovies;
-  List get upComingMovies => _upComingMovies;
-  List get actors => _actors;
+  List<dynamic> get popularMovies => _popularMovies;
+  List<dynamic> get topRatedMovies => _topRatedMovies;
+  List<dynamic> get nowPlayingMovies => _nowPlayingMovies;
+  List<dynamic> get upComingMovies => _upComingMovies;
+  List<dynamic> get actors => _actors;
   Map<String, dynamic> get selectedMovie => _selectedMovie;
   String get youtubeTrailerKey => _youtubeTrailerKey;
 
-  void fetchMovies() async {
-    _popularMovies = await ApiService().fetchMoviesByCategory('popular');
-    _topRatedMovies = await ApiService().fetchMoviesByCategory('top_rated');
-    _nowPlayingMovies = await ApiService().fetchMoviesByCategory('now_playing');
-    _upComingMovies = await ApiService().fetchMoviesByCategory('upcoming');
-    notifyListeners();
+  final ApiService _apiService = ApiService();
+
+  Future<void> fetchMovies() async {
+    try {
+      _popularMovies = await _apiService.fetchMoviesByCategory('popular');
+      _topRatedMovies = await _apiService.fetchMoviesByCategory('top_rated');
+      _nowPlayingMovies = await _apiService.fetchMoviesByCategory('now_playing');
+      _upComingMovies = await _apiService.fetchMoviesByCategory('upcoming');
+      notifyListeners();
+    } catch (e) {
+      print(e);
+      // Puedes manejar el error de otra manera si es necesario
+    }
   }
 
-  void fetchMovieDetails(int movieId) async {
-    final movieDetails = await ApiService().fetchMovieDetails(movieId);
+  Future<void> fetchMovieDetails(int movieId) async {
+  try {
+    final movieDetails = await _apiService.fetchMovieById(movieId);
     _selectedMovie = movieDetails;
 
-    // Obtener actores
-    _actors = await ApiService().fetchMovieActors(movieId);
+    _actors = await _apiService.fetchMovieActors(movieId);
 
-    // Obtener el tráiler de YouTube
+    _youtubeTrailerKey = _findYoutubeTrailerKey(movieDetails);
+
+    notifyListeners();
+  } catch (e) {
+    print(e);
+  }
+}
+
+  String _findYoutubeTrailerKey(Map<String, dynamic> movieDetails) {
     if (movieDetails['videos'] != null) {
       final videos = movieDetails['videos']['results'];
       for (var video in videos) {
         if (video['site'] == 'YouTube' && video['type'] == 'Trailer') {
-          _youtubeTrailerKey = video['key'];
-          break;
+          return 'https://www.youtube.com/watch?v=${video['key']}';
         }
       }
     }
-
-    notifyListeners();
+    return ''; // Retornar una cadena vacía si no se encuentra ningún trailer de YouTube
   }
 }

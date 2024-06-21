@@ -1,46 +1,50 @@
-import 'package:cineapp/provaider/movie_provaider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:cineapp/provaider/movie_provaider.dart';
 
-class MovieDetailScreen extends StatefulWidget {
+class DetallePeliculaScreen extends StatefulWidget {
   static const routeName = '/movie-detail';
 
-  const MovieDetailScreen({super.key});
+  const DetallePeliculaScreen({super.key});
 
   @override
-  _MovieDetailScreenState createState() => _MovieDetailScreenState();
+  DetallePeliculaScreenState createState() => DetallePeliculaScreenState();
 }
 
-class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  YoutubePlayerController? _youtubeController;
+class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
+  bool _isLoading = true; // Estado para controlar la carga inicial
+  bool _didFetchData = false; // Para evitar múltiples llamadas a fetchMovieDetails
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final movieId = ModalRoute.of(context)?.settings.arguments as int?;
-    if (movieId != null) {
-      Provider.of<MovieProvider>(context, listen: false).fetchMovieDetails(movieId);
-    }
-
-    final provider = Provider.of<MovieProvider>(context, listen: false);
-    final trailerKey = provider.youtubeTrailerKey;
-
-    if (trailerKey.isNotEmpty) {
-      _youtubeController = YoutubePlayerController(
-        initialVideoId: trailerKey,
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: false,
-        ),
-      );
+    if (!_didFetchData) {
+      _loadMovieDetails();
+      _didFetchData = true; // Asegurarse de que solo se cargue una vez
     }
   }
 
-  @override
-  void dispose() {
-    _youtubeController?.dispose();
-    super.dispose();
+  // Función para cargar los detalles de la película
+  void _loadMovieDetails() {
+    final movieId = ModalRoute.of(context)?.settings.arguments as int?;
+    if (movieId != null) {
+      Provider.of<MovieProvider>(context, listen: false)
+          .fetchMovieDetails(movieId)
+          .then((_) {
+        setState(() {
+          _isLoading = false; // Cambiar el estado a false cuando los datos estén cargados
+        });
+      }).catchError((error) {
+        print('Error fetching movie details: $error');
+        setState(() {
+          _isLoading = false; // Cambiar el estado a false si hay un error
+        });
+      });
+    } else {
+      setState(() {
+        _isLoading = false; // Cambiar el estado a false si no se proporciona un movieId
+      });
+    }
   }
 
   @override
@@ -48,119 +52,137 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     final movie = Provider.of<MovieProvider>(context).selectedMovie;
     final actors = Provider.of<MovieProvider>(context).actors;
 
-    if (movie == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Cargando...'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(movie['original_title'] ?? 'Sin título', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-        backgroundColor: const Color.fromARGB(255, 231, 145, 17),
+        toolbarHeight: 86.2,
+        centerTitle: true,
+        title: Text(
+          movie['original_title'] ?? 'Sin título',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            if (movie['poster_path'] != null)
-              Image.network(
-                'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
-                fit: BoxFit.cover,
-              ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text('👁️‍🗨️Sinopsis: \n${movie['overview']?? 'Sin descripción'}',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Género: ${movie['genres']?.map((g) => g['name']).join(', ') ?? 'No disponible'}',
-                style: TextStyle(fontSize: 18, color: Colors.white, ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                '🔝Popularidad: ${movie['popularity'].toString()}',
-                style: TextStyle(fontSize: 17, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text('🎬Trailer: ', style: TextStyle(fontSize: 25, color: Colors.white),),
-            if (_youtubeController != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: YoutubePlayer(
-                  controller: _youtubeController!,
-                  showVideoProgressIndicator: true,
-                  progressIndicatorColor: Colors.red,
-                ),
-              ),
-            const SizedBox(height: 20),
-            const Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                '🎭Actores:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-            height: 150,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: actors.length,
-              itemBuilder: (ctx, index) {
-                final actor = actors[index];
-                return Container(
-                  width: 100,
-                  margin: const EdgeInsets.only(right: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (actor['profile_path'] != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.network(
-                            'https://image.tmdb.org/t/p/w200${actor['profile_path']}',
-                            fit: BoxFit.cover,
-                            height: 100,
-                            width: 100,
+      body: _isLoading // Mostrar el indicador de carga si estamos cargando
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  if (movie['poster_path'] != null)
+                    Image.network(
+                      'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.error, color: Colors.red, size: 50);
+                      },
+                    ),
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '👁️‍🗨️ Sinopsis: \n${movie['overview'] ?? 'Sin descripción'}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '🍿 Género: ${movie['genres']?.map((g) => g['name']).join(', ') ?? 'No disponible'}',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        const Text(
+                          '⏫ Puntuación:    ',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey[800],
+                          ),
+                          child: Center(
+                            child: Text(
+                              movie['vote_average'].toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 17, color: Colors.white),
+                            ),
                           ),
                         ),
-                      const SizedBox(height: 5),
-                      Text(
-                        actor['name'] ?? 'Desconocido',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                );
-              },
+                  const SizedBox(height: 20),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '🎬 Trailer:',
+                      style: TextStyle(fontSize: 25),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '🎭 Actores:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 150,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: actors.length,
+                      itemBuilder: (ctx, index) {
+                        final actor = actors[index];
+                        return Container(
+                          width: 100,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (actor['profile_path'] != null)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.network(
+                                    'https://image.tmdb.org/t/p/w200${actor['profile_path']}',
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                    width: 100,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.error, color: Colors.red, size: 50);
+                                    },
+                                  ),
+                                ),
+                              const SizedBox(height: 5),
+                              Text(
+                                actor['name'] ?? 'Desconocido',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-          ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
     );
   }
 }
