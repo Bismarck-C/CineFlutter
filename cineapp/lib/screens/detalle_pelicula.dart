@@ -1,6 +1,8 @@
+import 'package:cineapp/screens/trailer_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cineapp/provaider/movie_provaider.dart';
+import 'package:video_player/video_player.dart';
 
 class DetallePeliculaScreen extends StatefulWidget {
   static const routeName = '/movie-detail';
@@ -13,7 +15,10 @@ class DetallePeliculaScreen extends StatefulWidget {
 
 class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
   bool _isLoading = true; // Estado para controlar la carga inicial
-  bool _didFetchData = false; // Para evitar múltiples llamadas a fetchMovieDetails
+  bool _didFetchData =
+      false; // Para evitar múltiples llamadas a fetchMovieDetails
+
+  late VideoPlayerController _controller;
 
   @override
   void didChangeDependencies() {
@@ -32,7 +37,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
           .fetchMovieDetails(movieId)
           .then((_) {
         setState(() {
-          _isLoading = false; // Cambiar el estado a false cuando los datos estén cargados
+          _isLoading =
+              false; // Cambiar el estado a false cuando los datos estén cargados
         });
       }).catchError((error) {
         print('Error fetching movie details: $error');
@@ -42,7 +48,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
       });
     } else {
       setState(() {
-        _isLoading = false; // Cambiar el estado a false si no se proporciona un movieId
+        _isLoading =
+            false; // Cambiar el estado a false si no se proporciona un movieId
       });
     }
   }
@@ -51,6 +58,7 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
   Widget build(BuildContext context) {
     final movie = Provider.of<MovieProvider>(context).selectedMovie;
     final actors = Provider.of<MovieProvider>(context).actors;
+    final trailer = Provider.of<MovieProvider>(context).youtubeTrailerKey;
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +66,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
         centerTitle: true,
         title: Text(
           movie['original_title'] ?? 'Sin título',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.black,
       ),
@@ -75,7 +84,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                       'https://image.tmdb.org/t/p/w500${movie['poster_path']}',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.error, color: Colors.red, size: 50);
+                        return const Icon(Icons.error,
+                            color: Colors.red, size: 50);
                       },
                     ),
                   const SizedBox(height: 30),
@@ -113,7 +123,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                           child: Center(
                             child: Text(
                               movie['vote_average'].toStringAsFixed(1),
-                              style: const TextStyle(fontSize: 17, color: Colors.white),
+                              style: const TextStyle(
+                                  fontSize: 17, color: Colors.white),
                             ),
                           ),
                         ),
@@ -128,12 +139,16 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                       style: TextStyle(fontSize: 25),
                     ),
                   ),
+                  Center(
+                    child: TrailerPlayer(url: trailer)
+                  ),
                   const SizedBox(height: 20),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
                       '🎭 Actores:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -159,7 +174,8 @@ class DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
                                     height: 100,
                                     width: 100,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(Icons.error, color: Colors.red, size: 50);
+                                      return const Icon(Icons.error,
+                                          color: Colors.red, size: 50);
                                     },
                                   ),
                                 ),

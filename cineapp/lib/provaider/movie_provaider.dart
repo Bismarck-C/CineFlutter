@@ -24,7 +24,8 @@ class MovieProvider with ChangeNotifier {
     try {
       _popularMovies = await _apiService.fetchMoviesByCategory('popular');
       _topRatedMovies = await _apiService.fetchMoviesByCategory('top_rated');
-      _nowPlayingMovies = await _apiService.fetchMoviesByCategory('now_playing');
+      _nowPlayingMovies =
+          await _apiService.fetchMoviesByCategory('now_playing');
       _upComingMovies = await _apiService.fetchMoviesByCategory('upcoming');
       notifyListeners();
     } catch (e) {
@@ -34,26 +35,26 @@ class MovieProvider with ChangeNotifier {
   }
 
   Future<void> fetchMovieDetails(int movieId) async {
-  try {
-    final movieDetails = await _apiService.fetchMovieById(movieId);
-    _selectedMovie = movieDetails;
+    try {
+      final movieDetails = await _apiService.fetchMovieById(movieId);
+      _selectedMovie = movieDetails;
 
-    _actors = await _apiService.fetchMovieActors(movieId);
-
-    _youtubeTrailerKey = _findYoutubeTrailerKey(movieDetails);
-
-    notifyListeners();
-  } catch (e) {
-    print(e);
+      _actors = await _apiService.fetchMovieActors(movieId);
+      final videos = await _apiService.fetchMovieTrailer(movieId);
+      print(videos);
+      _youtubeTrailerKey = _findYoutubeTrailerKey(videos);
+      print(_youtubeTrailerKey);
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
   }
-}
 
-  String _findYoutubeTrailerKey(Map<String, dynamic> movieDetails) {
-    if (movieDetails['videos'] != null) {
-      final videos = movieDetails['videos']['results'];
-      for (var video in videos) {
+  String _findYoutubeTrailerKey(Map<String, dynamic> videos) {
+    if (videos['results'] != null) {
+      for (var video in videos["results"]) {
         if (video['site'] == 'YouTube' && video['type'] == 'Trailer') {
-          return 'https://www.youtube.com/watch?v=${video['key']}';
+          return video['key'];
         }
       }
     }

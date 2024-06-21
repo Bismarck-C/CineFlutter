@@ -43,4 +43,14 @@ class ApiService {
       throw Exception('Error al cargar la película');
     }
   }
+
+  Future<Map<String, dynamic>> fetchMovieTrailer(int movieId) async {
+    final response = await http.get(Uri.parse(
+        '$baseUrl/movie/$movieId/videos?api_key=$apiKey&language=es-ES'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al cargar la película');
+    }
+  }
 }
