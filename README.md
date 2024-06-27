@@ -17,7 +17,7 @@ Cuenta de desarrollador en TMDB para obtener la clave API
 2. flutter pub get.
 
    
-#Configurar la API de TMDB:
+# Configurar la API de TMDB:
 ## Regístrate en TMDB y obtén una clave API.
 const String apiKey = 'TU_CLAVE_API';
 
