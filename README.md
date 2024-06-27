@@ -13,12 +13,14 @@ Dart 2.17 o superior
 Cuenta de desarrollador en TMDB para obtener la clave API
 
 ## Instalar dependencias:
-Copiar código
-flutter pub get
-Configurar la API de TMDB:
+1. Copiar código.
+2. flutter pub get.
 
+   
+#Configurar la API de TMDB:
 ## Regístrate en TMDB y obtén una clave API.
 const String apiKey = 'TU_CLAVE_API';
+
 
 ## Ejecutar la aplicación:
 Copiar código
